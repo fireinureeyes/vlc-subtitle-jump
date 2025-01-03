@@ -1,3 +1,5 @@
+textinput = nil
+
 function descriptor()
 	return {
 		title = "Jump subtitle",
@@ -24,9 +26,11 @@ function create_dialog()
 	dlg = vlc.dialog("Jump subtitle")
 	if vlc.input.item() and Load_subtitles() then
 		-- column, row, col_span, row_span
+		dlg:add_label("Jump to the previous or next subtitle location:",1, 1, 8, 1)
 		dlg:add_button("Previous",previous, 1, 2, 4, 1)
 		dlg:add_button("Next",next, 5, 2, 4, 1)
-		dlg:add_label("Jump to the previous or next subtitle location:",1, 1, 8, 1)
+		dlg:add_label("Jump max by (0 = unlimited) seconds:",1, 3, 8, 1)
+		textinput = dlg:add_text_input("10", 1, 4, 8, 1)
 	end
 end
 
@@ -71,6 +75,7 @@ function previous()
 	subtitle=nil
 	local input = vlc.object.input()
 	local actual_time = vlc.var.get(input, "time")
+	local max_jump = tonumber(textinput:get_text()) * 1000000 -- convert to microseconds
 	local previous_subtitle = nil
 	for i, v in pairs(subtitles) do
 		if actual_time > v[1] then
@@ -80,8 +85,13 @@ function previous()
 		end
 	end
 	if previous_subtitle then
-		subtitle = previous_subtitle
-		vlc.var.set(input, "time", subtitle[1])
+		if max_jump == 0 or (actual_time - previous_subtitle[1]) <= max_jump then
+			subtitle = previous_subtitle
+			vlc.var.set(input, "time", subtitle[1])
+		else
+			vlc.var.set(input, "time", actual_time - max_jump)
+			vlc.msg.info("Previous subtitle is more than " .. max_jump / 1000000 .. " seconds away. Jumping by max jump time.")
+		end
 	end
 end
 
@@ -89,11 +99,17 @@ function next()
 	subtitle=nil
 	local input = vlc.object.input()
 	local actual_time = vlc.var.get(input, "time")
-		for i, v in pairs(subtitles) do
-			if actual_time < v[1] then
+	local max_jump = tonumber(textinput:get_text()) * 1000000 -- convert to microseconds
+	for i, v in pairs(subtitles) do
+		if actual_time < v[1] then
+			if max_jump == 0 or (v[1] - actual_time) <= max_jump then
 				subtitle = v
 				vlc.var.set(input, "time", subtitle[1])
-				break
+			else
+				vlc.var.set(input, "time", actual_time + max_jump)
+				vlc.msg.info("Next subtitle is more than " .. max_jump / 1000000 .. " seconds away. Jumping by max jump time.")
 			end
+			break
 		end
+	end
 end
