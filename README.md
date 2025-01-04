@@ -1,5 +1,6 @@
 # VLC Subtitle Jump Plugin
-VLC Plugin offering the option to jump to the timestamp of the next or previous subtitle
+VLC Plugin offering the option to jump to the timestamp of the next or previous subtitle, or by maximum the defined value.
+Helps to save time watching, while not missing any dialogues.
 
 <p float="left">
 <img src="https://github.com/fireinureeyes/vlc-subtitle-jump/blob/main/plugin-screenshot.png?raw=true">
