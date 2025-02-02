@@ -14,7 +14,10 @@ e.g. folder/movie_name.mkv -> folder/movie_name.srt
 - Mac: /Applications/VLC.app/Contents/MacOS/share/lua/extensions/
 - Linux: /usr/lib/vlc/lua/extensions/
 
-### 2. In VLC open the plugin in View > Jump subtitle
+### 2. Open the plugin
+- Windows: VLC > View > Jump subtitle
+- Mac: VLC > Extensions > Jump subtitle
+- Linux: VLC > View > Jump subtitle
 
 ### 3. Optional on Windows
 Open keyboard_control.au3 script (by AbdalrahmanHafez) in AutoIt and use the Home and End keyboard shortcuts, even if VLC is in full screen mode 
