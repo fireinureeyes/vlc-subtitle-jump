@@ -3,7 +3,7 @@ VLC Plugin offering the option to jump to the timestamp of the next or previous 
 Helps to save time watching, while not missing any dialogues.
 
 <p float="left">
-<img src="https://github.com/fireinureeyes/vlc-subtitle-jump/blob/main/plugin-screenshot.png?raw=true">
+<img src="https://raw.githubusercontent.com/fireinureeyes/vlc-subtitle-jump/refs/heads/main/plugin-screenshot.png">
 </p>
 
 #### The subtitle file must be in .srt format in the same folder as the video being played, named the same as the video itself
