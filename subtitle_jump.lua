@@ -1,9 +1,11 @@
-textinput = nil
+textinput_next_max = nil
+textinput_prev_max = nil
+textinput_offset = nil
 
 function descriptor()
 	return {
 		title = "Jump subtitle",
-		version = "1.0",
+		version = "1.1",
 		author = "fireinureeyes",
 		url = "",
 		description = [[Jump to the next or previous subtitle location in the video.]],
@@ -29,8 +31,12 @@ function create_dialog()
 		dlg:add_label("Jump to the previous or next subtitle location:",1, 1, 8, 1)
 		dlg:add_button("Previous",previous, 1, 2, 4, 1)
 		dlg:add_button("Next",next, 5, 2, 4, 1)
-		dlg:add_label("Jump max by (0 = unlimited) seconds:",1, 3, 8, 1)
-		textinput = dlg:add_text_input("10", 1, 4, 8, 1)
+		dlg:add_label("Jump next max by (0 = unlimited) miliseconds:",1, 3, 8, 1)
+		textinput_next_max = dlg:add_text_input("10000", 1, 4, 8, 1)
+		dlg:add_label("Jump prev max by (0 = unlimited) miliseconds:",1, 5, 8, 1)
+		textinput_prev_max = dlg:add_text_input("0", 1, 6, 8, 1)
+		dlg:add_label("Jump in advance of the subtitle by miliseconds:",1, 7, 8, 1)
+		textinput_offset = dlg:add_text_input("50", 1, 8, 8, 1)
 	end
 end
 
@@ -75,7 +81,8 @@ function previous()
 	subtitle=nil
 	local input = vlc.object.input()
 	local actual_time = vlc.var.get(input, "time")
-	local max_jump = tonumber(textinput:get_text()) * 1000000 -- convert to microseconds
+	local prev_max_jump = tonumber(textinput_prev_max:get_text()) * 1000 -- convert to microseconds
+	local offset = tonumber(textinput_offset:get_text()) * 1000 -- convert to microseconds
 	local previous_subtitle = nil
 	for i, v in pairs(subtitles) do
 		if actual_time > v[1] then
@@ -85,12 +92,12 @@ function previous()
 		end
 	end
 	if previous_subtitle then
-		if max_jump == 0 or (actual_time - previous_subtitle[1]) <= max_jump then
+		if prev_max_jump == 0 or (actual_time - previous_subtitle[1]) <= prev_max_jump then
 			subtitle = previous_subtitle
-			vlc.var.set(input, "time", subtitle[1])
+			vlc.var.set(input, "time", subtitle[1] - offset)
 		else
-			vlc.var.set(input, "time", actual_time - max_jump)
-			vlc.msg.info("Previous subtitle is more than " .. max_jump / 1000000 .. " seconds away. Jumping by max jump time.")
+			vlc.var.set(input, "time", actual_time - prev_max_jump)
+			vlc.msg.info("Previous subtitle is more than " .. prev_max_jump / 1000000 .. " seconds away. Jumping by max jump time.")
 		end
 	end
 end
@@ -99,15 +106,16 @@ function next()
 	subtitle=nil
 	local input = vlc.object.input()
 	local actual_time = vlc.var.get(input, "time")
-	local max_jump = tonumber(textinput:get_text()) * 1000000 -- convert to microseconds
+	local next_max_jump = tonumber(textinput_next_max:get_text()) * 1000 -- convert to microseconds
+	local offset = tonumber(textinput_offset:get_text()) * 1000 -- convert to microseconds
 	for i, v in pairs(subtitles) do
 		if actual_time < v[1] then
-			if max_jump == 0 or (v[1] - actual_time) <= max_jump then
+			if next_max_jump == 0 or (v[1] - actual_time) <= next_max_jump then
 				subtitle = v
-				vlc.var.set(input, "time", subtitle[1])
+				vlc.var.set(input, "time", subtitle[1] - offset)
 			else
-				vlc.var.set(input, "time", actual_time + max_jump)
-				vlc.msg.info("Next subtitle is more than " .. max_jump / 1000000 .. " seconds away. Jumping by max jump time.")
+				vlc.var.set(input, "time", actual_time + next_max_jump)
+				vlc.msg.info("Next subtitle is more than " .. next_max_jump / 1000000 .. " seconds away. Jumping by max jump time.")
 			end
 			break
 		end
